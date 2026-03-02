@@ -181,12 +181,12 @@ python3 scripts/feishu_client.py check-config
 > - macOS：按 `Command + 空格`，输入 `Terminal`，按回车
 
 > 步骤 2：进入飞书助手目录（把下面这条命令复制粘贴到命令行窗口中，按回车）
-> - Windows：`cd C:\Users\用户名\.claude\skills\feishu-assistant`（提醒用户把"用户名"替换为自己的 Windows 用户名）
-> - macOS：`cd ~/.claude/skills/feishu-assistant`
+> - Windows（CMD/PowerShell）：`cd C:\Users\用户名\.claude\skills\feishu-assistant`（提醒用户把"用户名"替换为自己的 Windows 用户名）
+> - Windows（Git Bash）/macOS/Linux：`cd ~/.claude/skills/feishu-assistant`
 
 > 步骤 3：运行安装引导（复制粘贴以下命令到命令行窗口，按回车）
-> - Windows：`python scripts/setup.py`
-> - macOS：`python3 scripts/setup.py`
+> - Windows：`python scripts/setup.py`（如果提示找不到 python，试试 `python3`）
+> - macOS/Linux：`python3 scripts/setup.py`
 
 > 之后按照屏幕上的中文提示一步步操作就好。配置完成后回到 Claude Code，直接用自然语言操作飞书。
 
