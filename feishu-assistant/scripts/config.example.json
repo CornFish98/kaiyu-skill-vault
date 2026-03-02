@@ -3,6 +3,6 @@
   "app_id": "cli_xxx",
   "app_secret": "xxx",
   "default_chat_id": "",
-  "oauth_scopes": "docx:document docx:document:readonly wiki:wiki:readonly",
+  "oauth_scopes": "docx:document docx:document:readonly wiki:wiki:readonly calendar:calendar:readonly",
   "team_members": {}
 }

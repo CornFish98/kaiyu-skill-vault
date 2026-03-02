@@ -11,17 +11,27 @@ description: 飞书助手：向团队成员/群组发消息、创建和更新文
 
 ## 首次使用前
 
-用户需要先完成安装配置（运行一次即可）：
+执行任何命令前，先读取 `scripts/config.json`：
+- 如果文件存在且 `app_id` 不是占位符（非 `cli_xxx`），说明已配置完成，直接跳到下方「核心命令」执行用户需求
+- 如果文件不存在或 `app_id` 仍为占位符，提示用户在**独立的命令行窗口**（不是 Claude Code）中运行以下命令。注意要先告知用户 skill 的实际安装路径并引导 cd 进去：
 
+Windows：
 ```bash
+cd C:\Users\用户名\.claude\skills\feishu-assistant
+python scripts/setup.py
+```
+
+macOS / Linux：
+```bash
+cd ~/.claude/skills/feishu-assistant
 python3 scripts/setup.py
 ```
 
 ## 执行命令须知
 
-所有命令通过 `python3 scripts/feishu_client.py <command>` 调用。
+所有命令通过 `python scripts/feishu_client.py <command>`（Windows）或 `python3 scripts/feishu_client.py <command>`（macOS/Linux）调用。
 执行前必须先 cd 到本 skill 的 Base directory。
-如果 `python3` 不可用，使用 `python` 代替。
+**平台判断规则**：检查运行环境的 platform，Windows 使用 `python`，macOS/Linux 使用 `python3`。下方示例统一写 `python3`，在 Windows 上执行时替换为 `python`。
 
 ## 查找联系人和知识库
 
@@ -53,6 +63,28 @@ python3 scripts/feishu_client.py send-message --type text --content "内容" --r
 
 # 读取群消息
 python3 scripts/feishu_client.py get-chat-messages --chat_id "oc_xxx" --page_size 20
+```
+
+### 群聊管理
+
+```bash
+# 创建群聊并拉入成员（members 为逗号分隔的 open_id）
+python3 scripts/feishu_client.py create-chat --name "项目群" --members "ou_xxx,ou_yyy" --description "项目讨论群"
+
+# 向已有群添加成员
+python3 scripts/feishu_client.py add-chat-members --chat_id "oc_xxx" --members "ou_xxx,ou_yyy"
+
+# 从群中移除成员
+python3 scripts/feishu_client.py remove-chat-members --chat_id "oc_xxx" --members "ou_xxx"
+
+# 获取群聊信息
+python3 scripts/feishu_client.py get-chat-info --chat_id "oc_xxx"
+
+# 修改群聊信息（群名、群描述，只传需要修改的字段）
+python3 scripts/feishu_client.py update-chat --chat_id "oc_xxx" --name "新群名" --description "新描述"
+
+# 列出群聊成员
+python3 scripts/feishu_client.py list-chat-members --chat_id "oc_xxx"
 ```
 
 ### 文档（需要 OAuth 授权）
@@ -106,6 +138,28 @@ python3 scripts/feishu_client.py get-user --email "user@example.com"
 python3 scripts/feishu_client.py upload-file --file_path "path/to/file.pdf" --parent_node "fldxxx"
 ```
 
+### 日历（需要 OAuth 授权）
+
+```bash
+# 查看我的日历列表
+python3 scripts/feishu_client.py list-calendars
+
+# 查看指定时间范围内的日程（calendar_id 默认 primary 即个人日历）
+python3 scripts/feishu_client.py list-events --calendar_id primary --start_time "2026-03-02 00:00" --end_time "2026-03-08 23:59"
+
+# 创建日程
+python3 scripts/feishu_client.py create-event --summary "周会" --start_time "2026-03-05 14:00" --end_time "2026-03-05 15:00" --description "每周例会" --attendees "ou_xxx,ou_yyy"
+
+# 查看日程详情
+python3 scripts/feishu_client.py get-event --calendar_id primary --event_id "xxx"
+
+# 修改日程（只传需要修改的字段）
+python3 scripts/feishu_client.py update-event --calendar_id primary --event_id "xxx" --summary "新标题" --start_time "2026-03-05 15:00" --end_time "2026-03-05 16:00"
+
+# 删除日程
+python3 scripts/feishu_client.py delete-event --calendar_id primary --event_id "xxx"
+```
+
 ### 管理命令
 
 ```bash
@@ -147,7 +201,7 @@ python3 scripts/oauth_server.py
 
 | 错误 | 原因 | 修复 |
 |------|------|------|
-| config.json 不存在 | 未运行安装引导 | 运行 `python3 scripts/setup.py` |
+| config.json 不存在 | 未运行安装引导 | 运行 `python scripts/setup.py`（Windows）或 `python3 scripts/setup.py`（macOS） |
 | Unauthorized / scope 相关 | OAuth 授权时缺少所需 scope | 在 `oauth_scopes` 加上缺失 scope，重新运行 `oauth_server.py` |
 | Token 刷新失败 | refresh_token 过期（>30天） | 重新运行 `oauth_server.py` |
 | Invalid app_access_token | 凭证错误 | 检查 `config.json` 的 app_id / app_secret |

@@ -46,7 +46,7 @@ def ensure_utf8():
     if sys.platform == "win32":
         os.system("")  # 启用 Windows ANSI 转义
         import io
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
         sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
 
 

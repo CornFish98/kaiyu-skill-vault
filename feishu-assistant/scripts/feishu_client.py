@@ -220,6 +220,45 @@ class FeishuClient:
             params["page_token"] = page_token
         return self._request("GET", "/im/v1/messages", params=params)
 
+    # ─── 群聊 ──────────────────────────────────────────────
+    def create_chat(self, name: str, member_ids: List[str], description: str = "") -> Dict[str, Any]:
+        """创建群聊并拉入成员"""
+        payload = {
+            "name": name,
+            "user_id_list": member_ids,
+        }
+        if description:
+            payload["description"] = description
+        return self._request("POST", "/im/v1/chats", json=payload, params={"user_id_type": "open_id"})
+
+    def add_chat_members(self, chat_id: str, member_ids: List[str]) -> Dict[str, Any]:
+        """向群聊添加成员"""
+        return self._request("POST", f"/im/v1/chats/{chat_id}/members", json={"id_list": member_ids}, params={"member_id_type": "open_id"})
+
+    def remove_chat_members(self, chat_id: str, member_ids: List[str]) -> Dict[str, Any]:
+        """从群聊移除成员"""
+        return self._request("DELETE", f"/im/v1/chats/{chat_id}/members", json={"id_list": member_ids}, params={"member_id_type": "open_id"})
+
+    def update_chat(self, chat_id: str, name: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
+        """修改群聊信息（群名、群描述等）"""
+        payload = {}
+        if name is not None:
+            payload["name"] = name
+        if description is not None:
+            payload["description"] = description
+        return self._request("PUT", f"/im/v1/chats/{chat_id}", json=payload)
+
+    def get_chat_info(self, chat_id: str) -> Dict[str, Any]:
+        """获取群聊信息"""
+        return self._request("GET", f"/im/v1/chats/{chat_id}")
+
+    def list_chat_members(self, chat_id: str, page_size: int = 50, page_token: Optional[str] = None) -> Dict[str, Any]:
+        """列出群聊成员"""
+        params = {"member_id_type": "open_id", "page_size": min(page_size, 50)}
+        if page_token:
+            params["page_token"] = page_token
+        return self._request("GET", f"/im/v1/chats/{chat_id}/members", params=params)
+
     # ─── 文档 ──────────────────────────────────────────────
     def create_document(self, title: str, content: str = "", folder_token: Optional[str] = None) -> Dict[str, Any]:
         """创建文档（用户身份）"""
@@ -263,19 +302,72 @@ class FeishuClient:
             return result.get("data", {})
 
     # ─── 日历 ──────────────────────────────────────────────
-    def create_calendar_event(self, summary: str, start_time: str, end_time: str, description: str = "", attendees: Optional[list] = None) -> Dict[str, Any]:
-        """创建日历事件"""
+    def _parse_time(self, time_str: str) -> str:
+        """将 'YYYY-MM-DD HH:MM' 格式转为 Unix 时间戳字符串"""
         from datetime import datetime
-        start_ts = int(datetime.strptime(start_time, "%Y-%m-%d %H:%M").timestamp())
-        end_ts = int(datetime.strptime(end_time, "%Y-%m-%d %H:%M").timestamp())
+        return str(int(datetime.strptime(time_str, "%Y-%m-%d %H:%M").timestamp()))
+
+    def list_calendars(self) -> Dict[str, Any]:
+        """列出用户的日历列表"""
+        return self._request("GET", "/calendar/v4/calendars", use_user_token=True)
+
+    def _resolve_calendar_id(self, calendar_id: str) -> str:
+        """将 'primary' 解析为用户主日历的真实 calendar_id"""
+        if calendar_id != "primary":
+            return calendar_id
+        data = self.list_calendars()
+        for cal in data.get("calendar_list", []):
+            if cal.get("type") == "primary":
+                return cal["calendar_id"]
+        raise Exception("未找到主日历，请使用 list-calendars 查看可用日历并指定 calendar_id")
+
+    def list_calendar_events(self, calendar_id: str = "primary", start_time: Optional[str] = None, end_time: Optional[str] = None, page_size: int = 50, page_token: Optional[str] = None) -> Dict[str, Any]:
+        """列出日历事件，支持时间范围过滤"""
+        calendar_id = self._resolve_calendar_id(calendar_id)
+        params = {"page_size": min(page_size, 50)}
+        if start_time:
+            params["start_time"] = self._parse_time(start_time)
+        if end_time:
+            params["end_time"] = self._parse_time(end_time)
+        if page_token:
+            params["page_token"] = page_token
+        return self._request("GET", f"/calendar/v4/calendars/{calendar_id}/events", use_user_token=True, params=params)
+
+    def get_calendar_event(self, calendar_id: str, event_id: str) -> Dict[str, Any]:
+        """获取单个日历事件详情"""
+        calendar_id = self._resolve_calendar_id(calendar_id)
+        return self._request("GET", f"/calendar/v4/calendars/{calendar_id}/events/{event_id}", use_user_token=True)
+
+    def create_calendar_event(self, summary: str, start_time: str, end_time: str, description: str = "", attendees: Optional[list] = None, calendar_id: str = "primary") -> Dict[str, Any]:
+        """创建日历事件"""
+        calendar_id = self._resolve_calendar_id(calendar_id)
         payload = {
             "summary": summary, "description": description,
-            "start_time": {"timestamp": str(start_ts)},
-            "end_time": {"timestamp": str(end_ts)},
+            "start_time": {"timestamp": self._parse_time(start_time)},
+            "end_time": {"timestamp": self._parse_time(end_time)},
         }
         if attendees:
             payload["attendees"] = [{"type": "user", "user_id": a} for a in attendees]
-        return self._request("POST", "/calendar/v4/calendars/primary/events", json=payload)
+        return self._request("POST", f"/calendar/v4/calendars/{calendar_id}/events", use_user_token=True, json=payload)
+
+    def update_calendar_event(self, calendar_id: str, event_id: str, summary: Optional[str] = None, start_time: Optional[str] = None, end_time: Optional[str] = None, description: Optional[str] = None) -> Dict[str, Any]:
+        """更新日历事件"""
+        calendar_id = self._resolve_calendar_id(calendar_id)
+        payload = {}
+        if summary is not None:
+            payload["summary"] = summary
+        if description is not None:
+            payload["description"] = description
+        if start_time is not None:
+            payload["start_time"] = {"timestamp": self._parse_time(start_time)}
+        if end_time is not None:
+            payload["end_time"] = {"timestamp": self._parse_time(end_time)}
+        return self._request("PATCH", f"/calendar/v4/calendars/{calendar_id}/events/{event_id}", use_user_token=True, json=payload)
+
+    def delete_calendar_event(self, calendar_id: str, event_id: str) -> Dict[str, Any]:
+        """删除日历事件"""
+        calendar_id = self._resolve_calendar_id(calendar_id)
+        return self._request("DELETE", f"/calendar/v4/calendars/{calendar_id}/events/{event_id}", use_user_token=True)
 
     # ─── 通讯录 ────────────────────────────────────────────
     def get_user_info(self, email: str) -> Dict[str, Any]:
@@ -545,6 +637,33 @@ def main():
     p.add_argument("--start_time", type=str)
     p.add_argument("--page_token", type=str)
 
+    # ── 群聊管理 ──
+    p = subparsers.add_parser("create-chat", help="创建群聊")
+    p.add_argument("--name", required=True, help="群聊名称")
+    p.add_argument("--members", required=True, help="成员 open_id，逗号分隔")
+    p.add_argument("--description", default="")
+
+    p = subparsers.add_parser("add-chat-members", help="向群聊添加成员")
+    p.add_argument("--chat_id", required=True)
+    p.add_argument("--members", required=True, help="成员 open_id，逗号分隔")
+
+    p = subparsers.add_parser("remove-chat-members", help="从群聊移除成员")
+    p.add_argument("--chat_id", required=True)
+    p.add_argument("--members", required=True, help="成员 open_id，逗号分隔")
+
+    p = subparsers.add_parser("get-chat-info", help="获取群聊信息")
+    p.add_argument("--chat_id", required=True)
+
+    p = subparsers.add_parser("update-chat", help="修改群聊信息")
+    p.add_argument("--chat_id", required=True)
+    p.add_argument("--name", help="新群名")
+    p.add_argument("--description", help="新群描述")
+
+    p = subparsers.add_parser("list-chat-members", help="列出群聊成员")
+    p.add_argument("--chat_id", required=True)
+    p.add_argument("--page_size", type=int, default=50)
+    p.add_argument("--page_token", type=str)
+
     # ── 文档 ──
     p = subparsers.add_parser("create-doc", help="创建文档")
     p.add_argument("--title", required=True)
@@ -556,12 +675,38 @@ def main():
     p.add_argument("--content", required=True)
 
     # ── 日历 ──
+    subparsers.add_parser("list-calendars", help="列出日历列表")
+
+    p = subparsers.add_parser("list-events", help="列出日历事件")
+    p.add_argument("--calendar_id", default="primary")
+    p.add_argument("--start_time", type=str, help="起始时间，格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--end_time", type=str, help="结束时间，格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--page_size", type=int, default=50)
+    p.add_argument("--page_token", type=str)
+
+    p = subparsers.add_parser("get-event", help="获取日历事件详情")
+    p.add_argument("--calendar_id", default="primary")
+    p.add_argument("--event_id", required=True)
+
     p = subparsers.add_parser("create-event", help="创建日历事件")
     p.add_argument("--summary", required=True)
-    p.add_argument("--start_time", required=True)
-    p.add_argument("--end_time", required=True)
+    p.add_argument("--start_time", required=True, help="格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--end_time", required=True, help="格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--calendar_id", default="primary")
     p.add_argument("--description", default="")
-    p.add_argument("--attendees")
+    p.add_argument("--attendees", help="参会人 open_id，逗号分隔")
+
+    p = subparsers.add_parser("update-event", help="更新日历事件")
+    p.add_argument("--calendar_id", default="primary")
+    p.add_argument("--event_id", required=True)
+    p.add_argument("--summary", type=str)
+    p.add_argument("--start_time", type=str, help="格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--end_time", type=str, help="格式 YYYY-MM-DD HH:MM")
+    p.add_argument("--description", type=str)
+
+    p = subparsers.add_parser("delete-event", help="删除日历事件")
+    p.add_argument("--calendar_id", default="primary")
+    p.add_argument("--event_id", required=True)
 
     # ── 文件上传 ──
     p = subparsers.add_parser("upload-file", help="上传文件")
@@ -641,8 +786,44 @@ def main():
             print(f"文档更新成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
         elif args.command == "create-event":
             attendees = args.attendees.split(",") if args.attendees else None
-            result = client.create_calendar_event(args.summary, args.start_time, args.end_time, args.description, attendees)
+            result = client.create_calendar_event(args.summary, args.start_time, args.end_time, args.description, attendees, args.calendar_id)
             print(f"日历事件创建成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "list-calendars":
+            result = client.list_calendars()
+            print(f"日历列表: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "list-events":
+            result = client.list_calendar_events(args.calendar_id, getattr(args, "start_time", None), getattr(args, "end_time", None), args.page_size, getattr(args, "page_token", None))
+            print(f"日历事件: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "get-event":
+            result = client.get_calendar_event(args.calendar_id, args.event_id)
+            print(f"事件详情: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "update-event":
+            result = client.update_calendar_event(args.calendar_id, args.event_id, args.summary, args.start_time, args.end_time, args.description)
+            print(f"事件更新成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "delete-event":
+            result = client.delete_calendar_event(args.calendar_id, args.event_id)
+            print(f"事件删除成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "create-chat":
+            member_ids = args.members.split(",")
+            result = client.create_chat(args.name, member_ids, args.description)
+            print(f"群聊创建成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "add-chat-members":
+            member_ids = args.members.split(",")
+            result = client.add_chat_members(args.chat_id, member_ids)
+            print(f"成员添加成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "remove-chat-members":
+            member_ids = args.members.split(",")
+            result = client.remove_chat_members(args.chat_id, member_ids)
+            print(f"成员移除成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "get-chat-info":
+            result = client.get_chat_info(args.chat_id)
+            print(f"群聊信息: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "update-chat":
+            result = client.update_chat(args.chat_id, name=args.name, description=args.description)
+            print(f"群聊信息修改成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "list-chat-members":
+            result = client.list_chat_members(args.chat_id, args.page_size, getattr(args, "page_token", None))
+            print(f"群聊成员: {json.dumps(result, ensure_ascii=False, indent=2)}")
         elif args.command == "upload-file":
             result = client.upload_file(args.file_path, args.parent_node, args.file_name)
             print(f"文件上传成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
