@@ -14,13 +14,14 @@ description: 飞书助手：向团队成员/群组发消息、创建和更新文
 用户需要先完成安装配置（运行一次即可）：
 
 ```bash
-python scripts/setup.py
+python3 scripts/setup.py
 ```
 
 ## 执行命令须知
 
-所有命令通过 `python scripts/feishu_client.py <command>` 调用。
+所有命令通过 `python3 scripts/feishu_client.py <command>` 调用。
 执行前必须先 cd 到本 skill 的 Base directory。
+如果 `python3` 不可用，使用 `python` 代替。
 
 ## 查找联系人和知识库
 
@@ -35,8 +36,8 @@ python scripts/setup.py
 如果缓存文件不存在，运行以下命令生成：
 
 ```bash
-python scripts/feishu_client.py refresh-contacts
-python scripts/feishu_client.py refresh-spaces
+python3 scripts/feishu_client.py refresh-contacts
+python3 scripts/feishu_client.py refresh-spaces
 ```
 
 ## 核心命令
@@ -45,71 +46,71 @@ python scripts/feishu_client.py refresh-spaces
 
 ```bash
 # 发送文本消息（支持 text/post/interactive/image）
-python scripts/feishu_client.py send-message --type text --content "内容" --receive_id "ou_xxx" --receive_id_type open_id
+python3 scripts/feishu_client.py send-message --type text --content "内容" --receive_id "ou_xxx" --receive_id_type open_id
 
 # 向群组发消息
-python scripts/feishu_client.py send-message --type text --content "内容" --receive_id "oc_xxx" --receive_id_type chat_id
+python3 scripts/feishu_client.py send-message --type text --content "内容" --receive_id "oc_xxx" --receive_id_type chat_id
 
 # 读取群消息
-python scripts/feishu_client.py get-chat-messages --chat_id "oc_xxx" --page_size 20
+python3 scripts/feishu_client.py get-chat-messages --chat_id "oc_xxx" --page_size 20
 ```
 
 ### 文档（需要 OAuth 授权）
 
 ```bash
 # 创建文档
-python scripts/feishu_client.py create-doc --title "标题" --content "内容"
+python3 scripts/feishu_client.py create-doc --title "标题" --content "内容"
 
 # 更新文档
-python scripts/feishu_client.py update-doc --doc_token "doxcxxx" --content "新内容"
+python3 scripts/feishu_client.py update-doc --doc_token "doxcxxx" --content "新内容"
 ```
 
 ### 知识库（需要 OAuth 授权）
 
 ```bash
 # 列出所有知识库空间
-python scripts/feishu_client.py list-wiki-spaces
+python3 scripts/feishu_client.py list-wiki-spaces
 
 # 列出空间下的文章（支持 --parent_node_token 查看子节点）
-python scripts/feishu_client.py list-wiki-nodes --space_id "xxx" --page_size 50
+python3 scripts/feishu_client.py list-wiki-nodes --space_id "xxx" --page_size 50
 
 # 读取文章纯文本内容
-python scripts/feishu_client.py read-wiki-node --node_token "xxx"
+python3 scripts/feishu_client.py read-wiki-node --node_token "xxx"
 ```
 
 ### 通讯录与组织
 
 ```bash
 # 显示团队通讯录（从缓存读取）
-python scripts/feishu_client.py show-contacts
+python3 scripts/feishu_client.py show-contacts
 
 # 刷新通讯录缓存（从飞书 API 重新拉取）
-python scripts/feishu_client.py refresh-contacts
+python3 scripts/feishu_client.py refresh-contacts
 
 # 显示知识库列表
-python scripts/feishu_client.py show-spaces
+python3 scripts/feishu_client.py show-spaces
 
 # 刷新知识库缓存
-python scripts/feishu_client.py refresh-spaces
+python3 scripts/feishu_client.py refresh-spaces
 
 # 显示组织信息
-python scripts/feishu_client.py show-org
+python3 scripts/feishu_client.py show-org
 
 # 通过邮箱查用户
-python scripts/feishu_client.py get-user --email "user@example.com"
+python3 scripts/feishu_client.py get-user --email "user@example.com"
 ```
 
 ### 文件上传
 
 ```bash
-python scripts/feishu_client.py upload-file --file_path "path/to/file.pdf" --parent_node "fldxxx"
+python3 scripts/feishu_client.py upload-file --file_path "path/to/file.pdf" --parent_node "fldxxx"
 ```
 
 ### 管理命令
 
 ```bash
 # 检查配置是否完整
-python scripts/feishu_client.py check-config
+python3 scripts/feishu_client.py check-config
 ```
 
 ## 配置
@@ -130,7 +131,7 @@ python scripts/feishu_client.py check-config
 文档操作和知识库阅读需要用户身份，首次使用或 scope 变更后运行：
 
 ```bash
-python scripts/oauth_server.py
+python3 scripts/oauth_server.py
 ```
 
 浏览器会打开授权页面，完成后 token 自动保存。scope 从 `config.json` 的 `oauth_scopes` 读取。
@@ -146,7 +147,7 @@ python scripts/oauth_server.py
 
 | 错误 | 原因 | 修复 |
 |------|------|------|
-| config.json 不存在 | 未运行安装引导 | 运行 `python scripts/setup.py` |
+| config.json 不存在 | 未运行安装引导 | 运行 `python3 scripts/setup.py` |
 | Unauthorized / scope 相关 | OAuth 授权时缺少所需 scope | 在 `oauth_scopes` 加上缺失 scope，重新运行 `oauth_server.py` |
 | Token 刷新失败 | refresh_token 过期（>30天） | 重新运行 `oauth_server.py` |
 | Invalid app_access_token | 凭证错误 | 检查 `config.json` 的 app_id / app_secret |

@@ -27,6 +27,20 @@ CONTACTS_CACHE_PATH = CACHE_DIR / "contacts.json"
 SPACES_CACHE_PATH = CACHE_DIR / "wiki_spaces.json"
 
 
+def check_python_version():
+    """检查 Python 版本是否满足要求"""
+    if sys.version_info < (3, 8):
+        print()
+        print("  ❌ 你的 Python 版本太低了！")
+        print(f"     当前版本：Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+        print("     需要版本：Python 3.8 或更高")
+        print()
+        print("  请到 https://www.python.org/downloads/ 下载最新版本安装。")
+        print("  安装时记得勾选「Add Python to PATH」选项。")
+        print()
+        sys.exit(1)
+
+
 def ensure_utf8():
     """确保控制台能正常显示中文"""
     if sys.platform == "win32":
@@ -250,6 +264,7 @@ def fetch_wiki_spaces(app_id, app_secret, user_token):
 
 # ─── 主流程 ──────────────────────────────────────────────────
 def main():
+    check_python_version()
     ensure_utf8()
     clear_screen()
 
