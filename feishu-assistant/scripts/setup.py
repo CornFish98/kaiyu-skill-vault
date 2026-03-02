@@ -499,9 +499,11 @@ def main():
             print("  你可以稍后手动运行 oauth_server.py 重试。")
             token_data = None
     else:
-        print("  已跳过。你可以稍后运行以下命令完成授权：")
+        print("  已跳过。你可以稍后在命令行中运行以下命令完成授权")
+        print("  （先确保已 cd 到飞书助手目录）：")
         python_cmd = "python" if sys.platform == "win32" else "python3"
-        print(f"  {python_cmd} scripts/oauth_server.py")
+        print()
+        print(f"    {python_cmd} scripts/oauth_server.py")
         token_data = None
 
     # ═══════════════════════════════════════════════════════
@@ -517,9 +519,11 @@ def main():
     contacts, err = fetch_contacts(app_id, app_secret)
     if err:
         print(f"  ⚠ 获取通讯录失败: {err}")
-        print("  可能是应用还没有通讯录权限。你可以稍后运行以下命令重试：")
+        print("  可能是应用还没有通讯录权限。你可以稍后在命令行中运行以下命令重试")
+        print("  （先确保已 cd 到飞书助手目录）：")
         python_cmd = "python" if sys.platform == "win32" else "python3"
-        print(f"  {python_cmd} scripts/feishu_client.py refresh-contacts")
+        print()
+        print(f"    {python_cmd} scripts/feishu_client.py refresh-contacts")
     else:
         with open(CONTACTS_CACHE_PATH, "w", encoding="utf-8") as f:
             json.dump(contacts, f, indent=2, ensure_ascii=False)
@@ -535,9 +539,11 @@ def main():
         spaces, err = fetch_wiki_spaces(app_id, app_secret, token_data["access_token"])
         if err:
             print(f"  ⚠ 获取知识库失败: {err}")
-            print("  你可以稍后运行以下命令重试：")
+            print("  你可以稍后在命令行中运行以下命令重试")
+            print("  （先确保已 cd 到飞书助手目录）：")
             python_cmd = "python" if sys.platform == "win32" else "python3"
-            print(f"  {python_cmd} scripts/feishu_client.py refresh-spaces")
+            print()
+            print(f"    {python_cmd} scripts/feishu_client.py refresh-spaces")
         else:
             with open(SPACES_CACHE_PATH, "w", encoding="utf-8") as f:
                 json.dump(spaces, f, indent=2, ensure_ascii=False)
@@ -555,7 +561,8 @@ def main():
     print("  ║                                              ║")
     print("  ╚══════════════════════════════════════════════╝")
     print()
-    print("  你现在可以在 Claude Code 中直接用自然语言操作飞书了，比如：")
+    print("  你现在可以在 Claude Code 中输入「初始化飞书助手」，")
+    print("  Claude 会自动检查配置并确认就绪。之后直接用自然语言操作飞书：")
     print()
     print('    "给张三发一条飞书消息"')
     print('    "看看知识库里有什么文章"')
@@ -564,10 +571,15 @@ def main():
     print("  配置文件位置：")
     print(f"    {CONFIG_PATH}")
     print()
-    print("  如需重新授权或刷新缓存：")
+    print("  如需重新授权或刷新缓存，先在命令行进入飞书助手目录，")
+    print("  然后复制粘贴以下对应命令（每次只复制一条）：")
     python_cmd = "python" if sys.platform == "win32" else "python3"
-    print(f"    {python_cmd} scripts/setup.py          # 重新运行安装引导")
-    print(f"    {python_cmd} scripts/oauth_server.py   # 仅重新授权")
+    print()
+    print(f"  重新运行安装引导：")
+    print(f"    {python_cmd} scripts/setup.py")
+    print()
+    print(f"  仅重新授权：")
+    print(f"    {python_cmd} scripts/oauth_server.py")
     print()
 
 

@@ -110,9 +110,9 @@ xcode-select --install
 
 ### 第 3 步：进入飞书助手目录
 
-在命令行窗口里输入以下命令（注意替换成你自己的路径），然后按回车：
+在命令行窗口里，复制粘贴下面**一条命令**，按回车：
 
-**Windows：**
+**Windows：**（把"你的用户名"换成你自己的）
 ```
 cd C:\Users\你的用户名\.claude\skills\feishu-assistant
 ```
@@ -124,28 +124,40 @@ cd ~/.claude/skills/feishu-assistant
 
 > 提示：你也可以用「拖拽」的方式——先输入 `cd `（cd 后面有一个空格），然后把文件夹直接拖到命令行窗口里，路径会自动填上，再按回车。
 
+看到命令行的路径变了（不报错），说明进入成功了。
+
 ### 第 4 步：运行安装引导
 
-在命令行窗口里输入以下命令，按回车：
+确认上一步成功后，再复制粘贴下面**一条命令**，按回车：
 
+**Windows：**
+```
+python scripts/setup.py
+```
+
+**macOS：**
 ```
 python3 scripts/setup.py
 ```
 
-> 如果提示 `python3` 找不到（Windows 上有时会这样），试试用 `python scripts/setup.py`。
+> 如果 Windows 上提示 `python` 找不到，试试 `python3 scripts/setup.py`；macOS 上反之。
 
-安装引导会用中文一步步教你完成配置，大约需要 3~5 分钟。按照屏幕上的提示操作就行。
+安装引导会用中文一步步教你完成配置。按照屏幕上的提示操作就行。
 
-### 第 5 步：开始使用
+### 第 5 步：回到 Claude Code 说"初始化飞书助手"
 
-配置完成后，打开 **Claude Code**，直接用自然语言跟它说：
+配置完成后，回到 **Claude Code**，输入：
+
+```
+初始化飞书助手
+```
+
+Claude 会自动检查配置状态，确认一切就绪。之后就可以直接用自然语言操作飞书了：
 
 - "给张三发一条飞书消息，内容是明天下午开会"
 - "看看知识库里有什么文章"
 - "帮我创建一个飞书文档，标题是会议纪要"
 - "读一下知识库里的《xxx》这篇文章"
-
-Claude 会自动调用飞书助手帮你完成操作。
 
 ---
 
@@ -181,26 +193,50 @@ feishu-assistant/
 
 ## 常用维护命令
 
-以下命令需要在命令行窗口中运行（和安装时一样），先 `cd` 到飞书助手目录：
+以下命令需要在命令行窗口中运行（和安装时一样）。每次运行前，先进入飞书助手目录：
 
-```bash
-# 检查配置是否正确
-python3 scripts/feishu_client.py check-config
+**进入目录（每次都要先执行这一步）：**
 
-# 刷新通讯录
-python3 scripts/feishu_client.py refresh-contacts
-
-# 刷新知识库列表
-python3 scripts/feishu_client.py refresh-spaces
-
-# 重新 OAuth 授权
-python3 scripts/oauth_server.py
-
-# 重新运行安装引导
-python3 scripts/setup.py
+Windows：
+```
+cd C:\Users\你的用户名\.claude\skills\feishu-assistant
 ```
 
-> Windows 上如果 `python3` 不行，把上面的 `python3` 换成 `python` 即可。
+macOS：
+```
+cd ~/.claude/skills/feishu-assistant
+```
+
+确认进入目录后，再复制粘贴下面需要的命令。**每次只复制一条命令**，按回车执行：
+
+---
+
+**检查配置是否正确：**
+```
+python scripts/feishu_client.py check-config
+```
+
+**刷新通讯录：**
+```
+python scripts/feishu_client.py refresh-contacts
+```
+
+**刷新知识库列表：**
+```
+python scripts/feishu_client.py refresh-spaces
+```
+
+**重新 OAuth 授权：**
+```
+python scripts/oauth_server.py
+```
+
+**重新运行安装引导：**
+```
+python scripts/setup.py
+```
+
+> macOS / Linux 上把 `python` 换成 `python3`。
 
 ## 安全提醒
 

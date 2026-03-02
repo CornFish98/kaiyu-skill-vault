@@ -9,23 +9,35 @@ description: 飞书助手：向团队成员/群组发消息、创建和更新文
 
 通过飞书 Open API 实现消息发送、文档管理、知识库阅读等功能。
 
-## 首次使用前
+## 初始化（用户说"初始化飞书助手"或首次调用时触发）
 
-执行任何命令前，先读取 `scripts/config.json`：
-- 如果文件存在且 `app_id` 不是占位符（非 `cli_xxx`），说明已配置完成，直接跳到下方「核心命令」执行用户需求
-- 如果文件不存在或 `app_id` 仍为占位符，提示用户在**独立的命令行窗口**（不是 Claude Code）中运行以下命令。注意要先告知用户 skill 的实际安装路径并引导 cd 进去：
+**第一步：检查配置状态**
 
-Windows：
-```bash
-cd C:\Users\用户名\.claude\skills\feishu-assistant
-python scripts/setup.py
-```
+读取 `scripts/config.json`：
+- 如果文件存在且 `app_id` 不是占位符（非 `cli_xxx`），说明已配置完成，告知用户"飞书助手已配置就绪"，直接跳到下方「核心命令」执行用户需求
+- 如果文件不存在或 `app_id` 仍为占位符，进入下方引导流程
 
-macOS / Linux：
-```bash
-cd ~/.claude/skills/feishu-assistant
-python3 scripts/setup.py
-```
+**第二步：引导用户完成配置**
+
+告知用户：需要在一个**独立的命令行窗口**（不是 Claude Code 里）完成配置，整个过程按屏幕提示操作即可。
+
+然后**逐步引导**，每一步只给一条命令，等用户确认后再给下一条：
+
+> 步骤 1：打开命令行窗口
+> - Windows：按 `Win + R`，输入 `cmd`，按回车
+> - macOS：按 `Command + 空格`，输入 `Terminal`，按回车
+
+> 步骤 2：进入飞书助手目录（把下面这条命令复制粘贴到命令行窗口中，按回车）
+> - Windows：`cd C:\Users\用户名\.claude\skills\feishu-assistant`（提醒用户把"用户名"替换为自己的 Windows 用户名）
+> - macOS：`cd ~/.claude/skills/feishu-assistant`
+
+> 步骤 3：运行安装引导（复制粘贴以下命令到命令行窗口，按回车）
+> - Windows：`python scripts/setup.py`
+> - macOS：`python3 scripts/setup.py`
+
+> 之后按照屏幕上的中文提示一步步操作就好。配置完成后回到 Claude Code，直接用自然语言操作飞书。
+
+**重要**：每次只给用户一条命令，不要把 cd 和 python 放在同一个代码块里，避免用户一次性复制多行导致出错。
 
 ## 执行命令须知
 
