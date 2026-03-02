@@ -259,6 +259,10 @@ class FeishuClient:
             params["page_token"] = page_token
         return self._request("GET", f"/im/v1/chats/{chat_id}/members", params=params)
 
+    def dissolve_chat(self, chat_id: str) -> Dict[str, Any]:
+        """解散群聊"""
+        return self._request("DELETE", f"/im/v1/chats/{chat_id}")
+
     # ─── 文档 ──────────────────────────────────────────────
     def create_document(self, title: str, content: str = "", folder_token: Optional[str] = None) -> Dict[str, Any]:
         """创建文档（用户身份）"""
@@ -664,6 +668,9 @@ def main():
     p.add_argument("--page_size", type=int, default=50)
     p.add_argument("--page_token", type=str)
 
+    p = subparsers.add_parser("dissolve-chat", help="解散群聊")
+    p.add_argument("--chat_id", required=True)
+
     # ── 文档 ──
     p = subparsers.add_parser("create-doc", help="创建文档")
     p.add_argument("--title", required=True)
@@ -824,6 +831,9 @@ def main():
         elif args.command == "list-chat-members":
             result = client.list_chat_members(args.chat_id, args.page_size, getattr(args, "page_token", None))
             print(f"群聊成员: {json.dumps(result, ensure_ascii=False, indent=2)}")
+        elif args.command == "dissolve-chat":
+            result = client.dissolve_chat(args.chat_id)
+            print(f"群聊已解散: {json.dumps(result, ensure_ascii=False, indent=2)}")
         elif args.command == "upload-file":
             result = client.upload_file(args.file_path, args.parent_node, args.file_name)
             print(f"文件上传成功: {json.dumps(result, ensure_ascii=False, indent=2)}")
