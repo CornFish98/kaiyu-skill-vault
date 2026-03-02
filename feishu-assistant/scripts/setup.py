@@ -268,7 +268,7 @@ def main():
     ensure_utf8()
     clear_screen()
 
-    total_steps = 4
+    total_steps = 6
 
     print()
     print("  ╔══════════════════════════════════════════════╗")
@@ -340,9 +340,75 @@ def main():
     print("  ✅ 凭证验证通过！")
 
     # ═══════════════════════════════════════════════════════
-    # 第 2 步：基本配置
+    # 第 2 步：开启机器人能力
     # ═══════════════════════════════════════════════════════
-    print_header("基本配置", 2, total_steps)
+    print_header("开启飞书机器人能力", 2, total_steps)
+    print("  你需要给应用添加「机器人」能力，这样它才能发消息。")
+    print()
+    print("  ┌──────────────────────────────────────────────────┐")
+    print("  │ 在飞书开放平台 → 你的应用：                      │")
+    print("  │ 1. 左侧菜单点击「添加应用能力」                  │")
+    print("  │ 2. 找到「机器人」，点击「添加」                   │")
+    print("  │ 3. 添加后会出现「机器人」菜单项                  │")
+    print("  └──────────────────────────────────────────────────┘")
+    print()
+    input("  完成后按回车继续...")
+
+    # ═══════════════════════════════════════════════════════
+    # 第 3 步：配置应用权限
+    # ═══════════════════════════════════════════════════════
+    print_header("配置应用权限", 3, total_steps)
+    print("  你需要给应用开通所需的 API 权限。")
+    print("  我们已经准备好了权限配置文件，你只需要复制粘贴即可。")
+    print()
+
+    scopes_path = SCRIPTS_DIR / "scopes.json"
+    if scopes_path.exists():
+        print("  ┌──────────────────────────────────────────────────┐")
+        print("  │ 在飞书开放平台 → 你的应用：                      │")
+        print("  │ 1. 左侧菜单点击「权限管理」                      │")
+        print("  │ 2. 点击右上角「批量开通」按钮                    │")
+        print("  │ 3. 打开下面这个文件，复制全部内容粘贴进去：      │")
+        print("  │                                                  │")
+        if sys.platform == "win32":
+            display_path = str(scopes_path).replace("/", "\\")
+        else:
+            display_path = str(scopes_path)
+        # 截断过长的路径显示
+        if len(display_path) > 48:
+            print(f"  │    {display_path[:48]}│")
+            print(f"  │    {display_path[48:]:<48}│")
+        else:
+            print(f"  │    {display_path:<48}│")
+        print("  │                                                  │")
+        print("  │ 4. 点击「确认开通」                              │")
+        print("  └──────────────────────────────────────────────────┘")
+    else:
+        print("  ⚠ 未找到 scopes.json 权限文件，请手动在权限管理中开通以下权限：")
+        print("  消息: im:message, im:message:send_as_bot, im:message:readonly")
+        print("  群聊: im:chat, im:chat:create, im:chat:read, im:chat:update")
+        print("  通讯录: contact:contact.base:readonly, contact:user.base:readonly")
+        print("  文档: docx:document, docx:document:readonly")
+        print("  知识库: wiki:wiki, wiki:wiki:readonly")
+        print("  日历: calendar:calendar, calendar:calendar:readonly")
+
+    print()
+    if ask_yes_no("要自动打开 scopes.json 文件吗？"):
+        if sys.platform == "win32":
+            os.startfile(str(scopes_path))
+        elif sys.platform == "darwin":
+            os.system(f'open "{scopes_path}"')
+        else:
+            os.system(f'xdg-open "{scopes_path}"')
+        print("  文件已打开。请复制全部内容，粘贴到飞书「批量开通」弹窗中。")
+
+    print()
+    input("  完成权限配置后按回车继续...")
+
+    # ═══════════════════════════════════════════════════════
+    # 第 4 步：基本配置
+    # ═══════════════════════════════════════════════════════
+    print_header("基本配置", 4, total_steps)
     print("  现在设置一些基本选项。不确定的可以直接按回车跳过，")
     print("  以后随时可以在 config.json 里修改。")
     print()
@@ -376,9 +442,9 @@ def main():
     print("  ✅ 配置已保存！")
 
     # ═══════════════════════════════════════════════════════
-    # 第 3 步：OAuth 授权
+    # 第 5 步：OAuth 授权
     # ═══════════════════════════════════════════════════════
-    print_header("授权登录", 3, total_steps)
+    print_header("授权登录", 5, total_steps)
     print("  接下来需要你在浏览器中登录飞书并点击「授权」，")
     print("  这样 Claude 才能以你的身份读写文档和知识库。")
     print()
@@ -409,9 +475,9 @@ def main():
         token_data = None
 
     # ═══════════════════════════════════════════════════════
-    # 第 4 步：获取团队信息
+    # 第 6 步：获取团队信息
     # ═══════════════════════════════════════════════════════
-    print_header("获取团队信息", 4, total_steps)
+    print_header("获取团队信息", 6, total_steps)
     print("  最后一步，自动获取你的团队通讯录和知识库列表，")
     print("  这样 Claude 就知道你的团队有谁、有哪些知识库。")
     print()
