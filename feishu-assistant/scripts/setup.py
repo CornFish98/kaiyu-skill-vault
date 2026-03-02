@@ -571,15 +571,19 @@ def main():
     print("  配置文件位置：")
     print(f"    {CONFIG_PATH}")
     print()
-    print("  如需重新授权或刷新缓存，先在命令行进入飞书助手目录，")
-    print("  然后复制粘贴以下对应命令（每次只复制一条）：")
+    print("  如需重新授权或刷新缓存，打开命令行窗口，")
+    print("  按以下步骤操作（每次只复制一条命令，按回车执行）：")
     python_cmd = "python" if sys.platform == "win32" else "python3"
     print()
-    print(f"  重新运行安装引导：")
-    print(f"    {python_cmd} scripts/setup.py")
+    print("  第一步：进入飞书助手目录")
+    if sys.platform == "win32":
+        print(f"    cd {SKILL_DIR}")
+    else:
+        print("    cd ~/.claude/skills/feishu-assistant")
     print()
-    print(f"  仅重新授权：")
-    print(f"    {python_cmd} scripts/oauth_server.py")
+    print("  第二步：运行对应命令")
+    print(f"    {python_cmd} scripts/setup.py          ← 重新运行安装引导")
+    print(f"    {python_cmd} scripts/oauth_server.py   ← 仅重新授权")
     print()
 
 
