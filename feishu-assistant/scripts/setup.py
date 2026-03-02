@@ -364,24 +364,23 @@ def main():
 
     scopes_path = SCRIPTS_DIR / "scopes.json"
     if scopes_path.exists():
+        # 直接帮用户打开文件
+        print("  正在打开权限配置文件 scopes.json ...")
+        if sys.platform == "win32":
+            os.startfile(str(scopes_path))
+        elif sys.platform == "darwin":
+            os.system(f'open "{scopes_path}"')
+        else:
+            os.system(f'xdg-open "{scopes_path}"')
+        print("  文件已打开！")
+        print()
+
         print("  ┌──────────────────────────────────────────────────┐")
         print("  │ 在飞书开放平台 → 你的应用：                      │")
         print("  │ 1. 左侧菜单点击「权限管理」                      │")
         print("  │ 2. 点击「批量导入/导出权限」按钮                 │")
         print("  │ 3. 在弹出界面上方选择「导入」标签                │")
-        print("  │ 4. 打开下面的文件，复制全部内容粘贴进去：        │")
-        print("  │                                                  │")
-        if sys.platform == "win32":
-            display_path = str(scopes_path).replace("/", "\\")
-        else:
-            display_path = str(scopes_path)
-        # 截断过长的路径显示
-        if len(display_path) > 48:
-            print(f"  │    {display_path[:48]}│")
-            print(f"  │    {display_path[48:]:<48}│")
-        else:
-            print(f"  │    {display_path:<48}│")
-        print("  │                                                  │")
+        print("  │ 4. 从刚才打开的文件中，复制全部内容粘贴进去      │")
         print("  │ 5. 点击「下一步，确认新增权限」                  │")
         print("  │ 6. 点击「申请开通」                              │")
         print("  └──────────────────────────────────────────────────┘")
@@ -393,16 +392,6 @@ def main():
         print("  文档: docx:document, docx:document:readonly")
         print("  知识库: wiki:wiki, wiki:wiki:readonly")
         print("  日历: calendar:calendar, calendar:calendar:readonly")
-
-    print()
-    if ask_yes_no("要自动打开 scopes.json 文件吗？"):
-        if sys.platform == "win32":
-            os.startfile(str(scopes_path))
-        elif sys.platform == "darwin":
-            os.system(f'open "{scopes_path}"')
-        else:
-            os.system(f'xdg-open "{scopes_path}"')
-        print("  文件已打开。请复制全部内容，粘贴到飞书「批量开通」弹窗中。")
 
     print()
     print("  ┌──────────────────────────────────────────────────┐")
