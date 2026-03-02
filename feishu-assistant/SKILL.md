@@ -9,58 +9,35 @@ description: 飞书助手：向团队成员/群组发消息、创建和更新文
 
 通过飞书 Open API 实现消息发送、文档管理、知识库阅读等功能。
 
-## 初始化（用户说"初始化飞书助手"或首次调用时触发）
+## 快速开始
 
-**第一步：检查配置状态**
+### 给同事发消息
 
-读取 `scripts/config.json`：
-- 如果文件存在且 `app_id` 不是占位符（非 `cli_xxx`），说明已配置完成，告知用户"飞书助手已配置就绪"，直接跳到下方「核心命令」执行用户需求
-- 如果文件不存在或 `app_id` 仍为占位符，进入下方引导流程
+1. 读取 `scripts/config.json` 中的 `team_members` 字段（姓名 → open_id 映射）
+2. 找到目标同事的 open_id
+3. 执行 send-message 命令
 
-**第二步：引导用户完成配置**
+```bash
+python3 scripts/feishu_client.py send-message --type text --content "消息内容" --receive_id "ou_xxx" --receive_id_type open_id
+```
 
-告知用户：需要在一个**独立的命令行窗口**（不是 Claude Code 里）完成配置，整个过程按屏幕提示操作即可。
+**示例**：给「张三」发消息
+- team_members 中查到 `"张三": "ou_abc123"`
+- 命令：`send-message --receive_id "ou_abc123" ...`
 
-然后**逐步引导**，每一步只给一条命令，等用户确认后再给下一条：
+### 给群里发消息
 
-> 步骤 1：打开命令行窗口
-> - Windows：按 `Win + R`，输入 `cmd`，按回车
-> - macOS：按 `Command + 空格`，输入 `Terminal`，按回车
+1. 读取 `scripts/config.json` 中的 `default_chat_id`（默认群聊 ID）
+2. 执行 send-message 命令，`receive_id_type` 改为 `chat_id`
 
-> 步骤 2：进入飞书助手目录（把下面这条命令复制粘贴到命令行窗口中，按回车）
-> - Windows：`cd C:\Users\用户名\.claude\skills\feishu-assistant`（提醒用户把"用户名"替换为自己的 Windows 用户名）
-> - macOS：`cd ~/.claude/skills/feishu-assistant`
+```bash
+python3 scripts/feishu_client.py send-message --type text --content "消息内容" --receive_id "oc_xxx" --receive_id_type chat_id
+```
 
-> 步骤 3：运行安装引导（复制粘贴以下命令到命令行窗口，按回车）
-> - Windows：`python scripts/setup.py`
-> - macOS：`python3 scripts/setup.py`
-
-> 之后按照屏幕上的中文提示一步步操作就好。配置完成后回到 Claude Code，直接用自然语言操作飞书。
-
-**重要**：每次只给用户一条命令，不要把 cd 和 python 放在同一个代码块里，避免用户一次性复制多行导致出错。
-
-## 执行命令须知
+## 平台说明
 
 所有命令通过 `python scripts/feishu_client.py <command>`（Windows）或 `python3 scripts/feishu_client.py <command>`（macOS/Linux）调用。
 执行前必须先 cd 到本 skill 的 Base directory。
-**平台判断规则**：检查运行环境的 platform，Windows 使用 `python`，macOS/Linux 使用 `python3`。下方示例统一写 `python3`，在 Windows 上执行时替换为 `python`。
-
-## 查找联系人和知识库
-
-发消息前需要知道接收者的 open_id，查知识库前需要知道 space_id。
-这些信息保存在缓存文件中，**请先读取缓存文件**获取：
-
-- **通讯录**：读取 `scripts/cache/contacts.json`，格式为 `[{"name": "张三", "open_id": "ou_xxx", "mobile": "+86xxx", "status": "已激活"}, ...]`
-- **知识库列表**：读取 `scripts/cache/wiki_spaces.json`，格式为 `[{"name": "空间名", "space_id": "xxx", "description": "..."}, ...]`
-- **默认群聊 ID**：读取 `scripts/config.json` 中的 `default_chat_id` 字段
-- **team_members**：读取 `scripts/config.json` 中的 `team_members` 字段（姓名 → open_id 映射）
-
-如果缓存文件不存在，运行以下命令生成：
-
-```bash
-python3 scripts/feishu_client.py refresh-contacts
-python3 scripts/feishu_client.py refresh-spaces
-```
 
 ## 核心命令
 
@@ -76,6 +53,8 @@ python3 scripts/feishu_client.py send-message --type text --content "内容" --r
 # 读取群消息
 python3 scripts/feishu_client.py get-chat-messages --chat_id "oc_xxx" --page_size 20
 ```
+
+**重要**：发消息前，先从 `config.json` 的 `team_members` 查找目标同事的 open_id。
 
 ### 群聊管理
 
@@ -180,6 +159,52 @@ python3 scripts/feishu_client.py delete-event --calendar_id primary --event_id "
 ```bash
 # 检查配置是否完整
 python3 scripts/feishu_client.py check-config
+```
+
+## 初始化（用户说"初始化飞书助手"或首次调用时触发）
+
+**第一步：检查配置状态**
+
+读取 `scripts/config.json`：
+- 如果文件存在且 `app_id` 不是占位符（非 `cli_xxx`），说明已配置完成，告知用户"飞书助手已配置就绪"，直接跳到上方「核心命令」执行用户需求
+- 如果文件不存在或 `app_id` 仍为占位符，进入下方引导流程
+
+**第二步：引导用户完成配置**
+
+告知用户：需要在一个**独立的命令行窗口**（不是 Claude Code 里）完成配置，整个过程按屏幕提示操作即可。
+
+然后**逐步引导**，每一步只给一条命令，等用户确认后再给下一条：
+
+> 步骤 1：打开命令行窗口
+> - Windows：按 `Win + R`，输入 `cmd`，按回车
+> - macOS：按 `Command + 空格`，输入 `Terminal`，按回车
+
+> 步骤 2：进入飞书助手目录（把下面这条命令复制粘贴到命令行窗口中，按回车）
+> - Windows：`cd C:\Users\用户名\.claude\skills\feishu-assistant`（提醒用户把"用户名"替换为自己的 Windows 用户名）
+> - macOS：`cd ~/.claude/skills/feishu-assistant`
+
+> 步骤 3：运行安装引导（复制粘贴以下命令到命令行窗口，按回车）
+> - Windows：`python scripts/setup.py`
+> - macOS：`python3 scripts/setup.py`
+
+> 之后按照屏幕上的中文提示一步步操作就好。配置完成后回到 Claude Code，直接用自然语言操作飞书。
+
+**重要**：每次只给用户一条命令，不要把 cd 和 python 放在同一个代码块里，避免用户一次性复制多行导致出错。
+
+## 缓存说明
+
+发消息前需要知道接收者的 open_id，查知识库前需要知道 space_id。这些信息保存在缓存文件中：
+
+- **通讯录**：读取 `scripts/cache/contacts.json`，格式为 `[{"name": "张三", "open_id": "ou_xxx", "mobile": "+86xxx", "status": "已激活"}, ...]`
+- **知识库列表**：读取 `scripts/cache/wiki_spaces.json`，格式为 `[{"name": "空间名", "space_id": "xxx", "description": "..."}, ...]`
+- **默认群聊 ID**：读取 `scripts/config.json` 中的 `default_chat_id` 字段
+- **team_members**：读取 `scripts/config.json` 中的 `team_members` 字段（姓名 → open_id 映射，由 refresh-contacts 自动填充）
+
+如果缓存文件不存在，运行以下命令生成：
+
+```bash
+python3 scripts/feishu_client.py refresh-contacts
+python3 scripts/feishu_client.py refresh-spaces
 ```
 
 ## 配置
