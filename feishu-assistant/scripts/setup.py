@@ -374,15 +374,13 @@ def main():
 
     scopes_path = SCRIPTS_DIR / "scopes.json"
     if scopes_path.exists():
-        # 直接帮用户打开文件
+        # 用浏览器打开 JSON 文件（跨平台，格式友好）
         print("  正在打开权限配置文件 scopes.json ...")
-        if sys.platform == "win32":
-            os.startfile(str(scopes_path))
-        elif sys.platform == "darwin":
-            os.system(f'open "{scopes_path}"')
-        else:
-            os.system(f'xdg-open "{scopes_path}"')
-        print("  文件已打开！")
+        file_url = f"file:///{scopes_path.as_posix()}"
+        webbrowser.open(file_url)
+        print("  文件已在浏览器中打开！")
+        print("  请在浏览器中全选（Ctrl+A / Cmd+A）并复制（Ctrl+C / Cmd+C）内容，")
+        print("  然后粘贴到飞书的批量开通弹窗中。")
         print()
 
         print("  ┌──────────────────────────────────────────────────┐")
