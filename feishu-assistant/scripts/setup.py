@@ -265,6 +265,27 @@ def fetch_wiki_spaces(app_id, app_secret, user_token):
 # ─── 主流程 ──────────────────────────────────────────────────
 def main():
     check_python_version()
+
+    # ─── 提前检查并安装 requests 库 ───────────────────────────
+    try:
+        import requests  # noqa: F401
+    except ImportError:
+        print()
+        print("  ════════════════════════════════════════════════════")
+        print("  需要安装一个网络请求库（requests），正在自动安装...")
+        print("  ════════════════════════════════════════════════════")
+        import subprocess
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"])
+            print("  ✅ 安装完成！")
+        except subprocess.CalledProcessError:
+            print()
+            print("  ⚠ 自动安装失败，请手动运行以下命令后重试：")
+            print(f"    {sys.executable} -m pip install requests")
+            print()
+            sys.exit(1)
+        import requests  # noqa: F401, F811
+
     ensure_utf8()
     clear_screen()
 
@@ -282,17 +303,6 @@ def main():
     print("  如果中途想退出，按 Ctrl+C 即可。")
     print()
     input("  准备好了吗？按回车开始 → ")
-
-    # ─── 检查 requests 库 ─────────────────────────────────
-    try:
-        import requests  # noqa: F401
-    except ImportError:
-        print()
-        print("  需要安装一个网络请求库（requests），正在自动安装...")
-        import subprocess
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "-q"])
-        print("  ✅ 安装完成！")
-        import requests  # noqa: F401, F811
 
     # ═══════════════════════════════════════════════════════
     # 第 1 步：获取飞书应用凭证
